@@ -1,0 +1,5 @@
+name: pints
+channels:
+  - conda-forge
+  - defaults
+prefix: C:\Users\kemuk\miniconda3\envs\pints
