@@ -1,0 +1,150 @@
+2025-03-11 17:23:38,847 - root- INFO - Set population random seed to: 42
+2025-03-11 17:23:41,415 - root- INFO - New Population from file c:\Users\Student\OneDrive - University of Edinburgh\Documents\My_Vaults\DPhil\Year 1\Hilary\First Rotation\first_rotation\gibraltar_example\gibraltar_inputs\gib_input.csv configured
+2025-03-11 17:23:41,422 - root- INFO - Set simulation random seed to: 42
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep InitialHouseholdSweep to population
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep InitialInfectedSweep to population
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep InitialisePlaceSweep to population
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep InitialDemographicsSweep to population
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep InterventionSweep to population
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep UpdatePlaceSweep to population
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep HouseholdSweep to population
+2025-03-11 17:23:41,422 - root- INFO - Bound sweep PlaceSweep to population
+2025-03-11 17:23:41,423 - root- INFO - Bound sweep SpatialSweep to population
+2025-03-11 17:23:41,423 - root- INFO - Bound sweep QueueSweep to population
+2025-03-11 17:23:41,423 - root- INFO - Bound sweep HostProgressionSweep to population
+2025-03-11 17:23:41,423 - root- INFO - Set output location to c:\Users\Student\OneDrive - University of Edinburgh\Documents\My_Vaults\DPhil\Year 1\Hilary\First Rotation\first_rotation\gibraltar_example\simulation_outputs\output_gibraltar.csv
+2025-03-11 17:23:41,434 - root- INFO - Set infection history infection status location to c:\Users\Student\OneDrive - University of Edinburgh\Documents\My_Vaults\DPhil\Year 1\Hilary\First Rotation\first_rotation\gibraltar_example\simulation_outputs\inf_status_history.csv
+2025-03-11 17:23:41,463 - root- INFO - Set infection history infectiousness location to c:\Users\Student\OneDrive - University of Edinburgh\Documents\My_Vaults\DPhil\Year 1\Hilary\First Rotation\first_rotation\gibraltar_example\simulation_outputs\infectiousness_history.csv
+2025-03-11 17:23:44,422 - root- INFO - No people in the person list supplied to update Place of type PlaceType.SecondarySchool at location (-5.366667, 36.14976858333333), with current occupancy 0 persons.
+2025-03-11 17:23:44,422 - root- INFO - No people in the person list supplied to update Place of type PlaceType.PrimarySchool at location (-5.366667, 36.149884291666666), with current occupancy 0 persons.
+2025-03-11 17:23:44,422 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:44,422 - root- INFO - No people in the person list supplied to update Place of type PlaceType.PrimarySchool at location (-5.366667, 36.15), with current occupancy 0 persons.
+2025-03-11 17:23:44,423 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:44,423 - root- INFO - No people in the person list supplied to update Place of type PlaceType.PrimarySchool at location (-5.366204166666666, 36.15023141666666), with current occupancy 0 persons.
+2025-03-11 17:23:44,472 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:44,490 - root- INFO - No people in the person list supplied to update Place of type PlaceType.SecondarySchool at location (-5.357985875, 36.15023141666666), with current occupancy 0 persons.
+2025-03-11 17:23:44,492 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:44,658 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:45,239 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:45,268 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:45,294 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:45,383 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:45,542 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:45,963 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:46,153 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:46,199 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:46,260 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:46,730 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:46,948 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,115 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,321 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,330 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,360 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,361 - root- INFO - No people in the person list supplied to update Place of type PlaceType.SecondarySchool at location (-5.35, 36.13321929166667), with current occupancy 0 persons.
+2025-03-11 17:23:47,377 - root- INFO - No people in the person list supplied to update Place of type PlaceType.SecondarySchool at location (-5.350462833333333, 36.13356641666667), with current occupancy 0 persons.
+2025-03-11 17:23:47,451 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,641 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,653 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,654 - root- INFO - No people in the person list supplied to update Place of type PlaceType.PrimarySchool at location (-5.3502314166666665, 36.12546283333333), with current occupancy 0 persons.
+2025-03-11 17:23:47,655 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,655 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,684 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,685 - root- INFO - No people in the person list supplied to update Place of type PlaceType.SecondarySchool at location (-5.358680125, 36.117012125), with current occupancy 0 persons.
+2025-03-11 17:23:47,700 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,764 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,769 - root- INFO - List of 0 weights given: no people of acceptable age for this place
+2025-03-11 17:23:47,789 - root- INFO - No people in the person list supplied to update Place of type PlaceType.SecondarySchool at location (-5.349537166666666, 36.11678070833333), with current occupancy 0 persons.
+2025-03-11 17:23:48,411 - root- INFO - Initial Sweeps Completed at time 0 days
+2025-03-11 17:23:49,102 - root- DEBUG - Iteration at time 1.0 days completed
+2025-03-11 17:23:49,623 - root- DEBUG - Iteration at time 2.0 days completed
+2025-03-11 17:23:50,015 - root- DEBUG - Iteration at time 3.0 days completed
+2025-03-11 17:23:50,533 - root- DEBUG - Iteration at time 4.0 days completed
+2025-03-11 17:23:50,963 - root- DEBUG - Iteration at time 5.0 days completed
+2025-03-11 17:23:51,429 - root- DEBUG - Iteration at time 6.0 days completed
+2025-03-11 17:23:51,908 - root- DEBUG - Iteration at time 7.0 days completed
+2025-03-11 17:23:52,471 - root- DEBUG - Iteration at time 8.0 days completed
+2025-03-11 17:23:52,924 - root- DEBUG - Iteration at time 9.0 days completed
+2025-03-11 17:23:53,397 - root- DEBUG - Iteration at time 10.0 days completed
+2025-03-11 17:23:54,044 - root- DEBUG - Iteration at time 11.0 days completed
+2025-03-11 17:23:54,712 - root- DEBUG - Iteration at time 12.0 days completed
+2025-03-11 17:23:55,547 - root- DEBUG - Iteration at time 13.0 days completed
+2025-03-11 17:23:56,087 - root- DEBUG - Iteration at time 14.0 days completed
+2025-03-11 17:23:56,791 - root- DEBUG - Iteration at time 15.0 days completed
+2025-03-11 17:23:57,380 - root- DEBUG - Iteration at time 16.0 days completed
+2025-03-11 17:23:58,084 - root- DEBUG - Iteration at time 17.0 days completed
+2025-03-11 17:23:58,890 - root- DEBUG - Iteration at time 18.0 days completed
+2025-03-11 17:23:59,503 - root- DEBUG - Iteration at time 19.0 days completed
+2025-03-11 17:24:00,183 - root- DEBUG - Iteration at time 20.0 days completed
+2025-03-11 17:24:00,893 - root- DEBUG - Iteration at time 21.0 days completed
+2025-03-11 17:24:01,719 - root- DEBUG - Iteration at time 22.0 days completed
+2025-03-11 17:24:02,412 - root- DEBUG - Iteration at time 23.0 days completed
+2025-03-11 17:24:03,344 - root- DEBUG - Iteration at time 24.0 days completed
+2025-03-11 17:24:04,196 - root- DEBUG - Iteration at time 25.0 days completed
+2025-03-11 17:24:05,238 - root- DEBUG - Iteration at time 26.0 days completed
+2025-03-11 17:24:06,024 - root- DEBUG - Iteration at time 27.0 days completed
+2025-03-11 17:24:06,841 - root- DEBUG - Iteration at time 28.0 days completed
+2025-03-11 17:24:07,660 - root- DEBUG - Iteration at time 29.0 days completed
+2025-03-11 17:24:08,623 - root- DEBUG - Iteration at time 30.0 days completed
+2025-03-11 17:24:09,359 - root- DEBUG - Iteration at time 31.0 days completed
+2025-03-11 17:24:10,256 - root- DEBUG - Iteration at time 32.0 days completed
+2025-03-11 17:24:11,098 - root- DEBUG - Iteration at time 33.0 days completed
+2025-03-11 17:24:12,281 - root- DEBUG - Iteration at time 34.0 days completed
+2025-03-11 17:24:13,226 - root- DEBUG - Iteration at time 35.0 days completed
+2025-03-11 17:24:14,211 - root- DEBUG - Iteration at time 36.0 days completed
+2025-03-11 17:24:15,351 - root- DEBUG - Iteration at time 37.0 days completed
+2025-03-11 17:24:16,635 - root- DEBUG - Iteration at time 38.0 days completed
+2025-03-11 17:24:17,583 - root- DEBUG - Iteration at time 39.0 days completed
+2025-03-11 17:24:18,616 - root- DEBUG - Iteration at time 40.0 days completed
+2025-03-11 17:24:19,759 - root- DEBUG - Iteration at time 41.0 days completed
+2025-03-11 17:24:21,065 - root- DEBUG - Iteration at time 42.0 days completed
+2025-03-11 17:24:22,288 - root- DEBUG - Iteration at time 43.0 days completed
+2025-03-11 17:24:23,626 - root- DEBUG - Iteration at time 44.0 days completed
+2025-03-11 17:24:24,923 - root- DEBUG - Iteration at time 45.0 days completed
+2025-03-11 17:24:26,023 - root- DEBUG - Iteration at time 46.0 days completed
+2025-03-11 17:24:26,870 - root- DEBUG - Iteration at time 47.0 days completed
+2025-03-11 17:24:27,898 - root- DEBUG - Iteration at time 48.0 days completed
+2025-03-11 17:24:29,186 - root- DEBUG - Iteration at time 49.0 days completed
+2025-03-11 17:24:30,345 - root- DEBUG - Iteration at time 50.0 days completed
+2025-03-11 17:24:31,496 - root- DEBUG - Iteration at time 51.0 days completed
+2025-03-11 17:24:32,498 - root- DEBUG - Iteration at time 52.0 days completed
+2025-03-11 17:24:33,598 - root- DEBUG - Iteration at time 53.0 days completed
+2025-03-11 17:24:34,584 - root- DEBUG - Iteration at time 54.0 days completed
+2025-03-11 17:24:35,423 - root- DEBUG - Iteration at time 55.0 days completed
+2025-03-11 17:24:36,252 - root- DEBUG - Iteration at time 56.0 days completed
+2025-03-11 17:24:37,137 - root- DEBUG - Iteration at time 57.0 days completed
+2025-03-11 17:24:38,108 - root- DEBUG - Iteration at time 58.0 days completed
+2025-03-11 17:24:39,378 - root- DEBUG - Iteration at time 59.0 days completed
+2025-03-11 17:24:40,298 - root- DEBUG - Iteration at time 60.0 days completed
+2025-03-11 17:24:41,219 - root- DEBUG - Iteration at time 61.0 days completed
+2025-03-11 17:24:42,465 - root- DEBUG - Iteration at time 62.0 days completed
+2025-03-11 17:24:43,420 - root- DEBUG - Iteration at time 63.0 days completed
+2025-03-11 17:24:44,388 - root- DEBUG - Iteration at time 64.0 days completed
+2025-03-11 17:24:45,436 - root- DEBUG - Iteration at time 65.0 days completed
+2025-03-11 17:24:46,295 - root- DEBUG - Iteration at time 66.0 days completed
+2025-03-11 17:24:47,081 - root- DEBUG - Iteration at time 67.0 days completed
+2025-03-11 17:24:47,949 - root- DEBUG - Iteration at time 68.0 days completed
+2025-03-11 17:24:48,941 - root- DEBUG - Iteration at time 69.0 days completed
+2025-03-11 17:24:49,743 - root- DEBUG - Iteration at time 70.0 days completed
+2025-03-11 17:24:50,507 - root- DEBUG - Iteration at time 71.0 days completed
+2025-03-11 17:24:51,357 - root- DEBUG - Iteration at time 72.0 days completed
+2025-03-11 17:24:52,212 - root- DEBUG - Iteration at time 73.0 days completed
+2025-03-11 17:24:53,157 - root- DEBUG - Iteration at time 74.0 days completed
+2025-03-11 17:24:54,305 - root- DEBUG - Iteration at time 75.0 days completed
+2025-03-11 17:24:55,435 - root- DEBUG - Iteration at time 76.0 days completed
+2025-03-11 17:24:56,789 - root- DEBUG - Iteration at time 77.0 days completed
+2025-03-11 17:24:57,652 - root- DEBUG - Iteration at time 78.0 days completed
+2025-03-11 17:24:58,400 - root- DEBUG - Iteration at time 79.0 days completed
+2025-03-11 17:24:59,220 - root- DEBUG - Iteration at time 80.0 days completed
+2025-03-11 17:25:00,048 - root- DEBUG - Iteration at time 81.0 days completed
+2025-03-11 17:25:01,160 - root- DEBUG - Iteration at time 82.0 days completed
+2025-03-11 17:25:01,975 - root- DEBUG - Iteration at time 83.0 days completed
+2025-03-11 17:25:02,840 - root- DEBUG - Iteration at time 84.0 days completed
+2025-03-11 17:25:03,708 - root- DEBUG - Iteration at time 85.0 days completed
+2025-03-11 17:25:04,502 - root- DEBUG - Iteration at time 86.0 days completed
+2025-03-11 17:25:05,445 - root- DEBUG - Iteration at time 87.0 days completed
+2025-03-11 17:25:06,308 - root- DEBUG - Iteration at time 88.0 days completed
+2025-03-11 17:25:07,120 - root- DEBUG - Iteration at time 89.0 days completed
+2025-03-11 17:25:07,969 - root- DEBUG - Iteration at time 90.0 days completed
+2025-03-11 17:25:07,970 - root- INFO - Final time 90.0 days reached
+2025-03-11 17:25:07,970 - root- INFO - Zip file created for inf_status_history.csv
+2025-03-11 17:25:13,712 - root- INFO - Zip file created for infectiousness_history.csv
