@@ -3,6 +3,7 @@ import numpy as np
 import pints
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+from scipy.interpolate import interp1d
 np.random.seed(42)
 
 class AbstractSEIRModel(pints.ForwardModel, ABC):
@@ -10,6 +11,7 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         super().__init__()
         self.initial_conditions = initial_conditions
         self.crude_R_t = 0
+        self.name = None
 
     @abstractmethod
     def n_parameters(self):
@@ -99,7 +101,7 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         prior = pints.UniformLogPrior(lower, upper)
         posterior = pints.LogPosterior(log_likelihood, prior)
 
-        optimiser = pints.OptimisationController(posterior, x0, method=pints.CMAES)
+        optimiser = pints.OptimisationController(posterior, x0, method=pints.XNES)
         optimiser.set_max_iterations(1000)
         optimiser.set_parallel(False)
 
@@ -107,7 +109,7 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         sim_output = self.simulate(found_params, times)
 
         # Plot comparison
-        self.plot(times, sim_output, title="Fitted SEIR", observed=observed)
+        self.plot(times, sim_output, title=f"Fitted {self.name}", observed=observed)
 
         return {
             "optimized_parameters": found_params,
@@ -119,6 +121,7 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
 class SimpleSEIRModel(AbstractSEIRModel):
     def __init__(self, initial_conditions):
         super().__init__(initial_conditions)
+        self.name="SimpleSEIRModel"
 
     def n_parameters(self):
         return 3
@@ -126,7 +129,6 @@ class SimpleSEIRModel(AbstractSEIRModel):
     def _full_simulate(self, initial_conditions, parameters, times):
         beta, kappa, gamma = parameters
         dt = times[1] - times[0]
-        print("dt is", dt)
         num_steps = len(times)
 
         S0, E0, I0, R0 = initial_conditions
@@ -159,6 +161,7 @@ class SimpleSEIRModel(AbstractSEIRModel):
 class RocheModel(AbstractSEIRModel):
     def __init__(self, initial_conditions):
         super().__init__(initial_conditions)
+        self.name="Roche Model"
 
     def n_parameters(self):
         return 8
@@ -167,7 +170,6 @@ class RocheModel(AbstractSEIRModel):
         C, beta_min, beta_max, stringency, stringency50, k, k_s, k_ri = parameters
 
         dt = times[1] - times[0]
-        print("dt is", dt)
         num_steps = len(times)
 
         # Initial conditions: [S, E, I, R]
@@ -197,10 +199,7 @@ class RocheModel(AbstractSEIRModel):
             dI = kappa * E - gamma * I
             dR = gamma * I
 
-            states[i, 0] = S + dt * dS
-            states[i, 1] = E + dt * dE
-            states[i, 2] = I + dt * dI
-            states[i, 3] = R + dt * dR
+            states[i] = [S + dt * dS, E + dt * dE, I + dt * dI, R + dt * dR]
 
         return states
 
