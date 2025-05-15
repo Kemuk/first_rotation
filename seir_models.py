@@ -13,9 +13,19 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
     def __init__(self, initial_conditions=None):
         super().__init__()
         self.initial_conditions = initial_conditions
-        self.crude_R_t = 0
+
+        self.real_R_t=3
+        self.R_t_estimate = 0
         self.name = None
         self.debug_history = []
+
+        self.beta_estimate=None
+        self.kappa_estimate=None
+        self.gamma_estimate=None
+
+        self.real_beta=0.214
+        self.real_kappa=0.218
+        self.real_gamma=0.071
 
     @abstractmethod
     def n_parameters(self):
@@ -27,6 +37,47 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
     @abstractmethod
     def _full_simulate(self, initial_conditions, parameters, times):
         pass
+
+    def compare_estimates_to_truth(self):
+        """
+        Compare estimated parameters with their true values.
+        """
+        rows = []
+        
+        # Add comparison for beta
+        rows.append({
+            "Parameter": "beta",
+            "Estimated": round(self.beta_estimate, 6),
+            "True": round(self.real_beta, 6),
+            "Error": round(abs(self.beta_estimate - self.real_beta), 6)
+        })
+        
+        # Add comparison for kappa
+        rows.append({
+            "Parameter": "kappa",
+            "Estimated": round(self.kappa_estimate, 6),
+            "True": round(self.real_kappa, 6),
+            "Error": round(abs(self.kappa_estimate - self.real_kappa), 6)
+        })
+        
+        # Add comparison for gamma
+        rows.append({
+            "Parameter": "gamma",
+            "Estimated": round(self.gamma_estimate, 6),
+            "True": round(self.real_gamma, 6),
+            "Error": round(abs(self.gamma_estimate - self.real_gamma), 6)
+        })
+        
+        # Add comparison for R_t
+        rows.append({
+            "Parameter": "R_t",
+            "Estimated": round(self.R_t_estimate, 6),
+            "True": round(self.real_R_t, 6),
+            "Error": round(abs(self.R_t_estimate - self.real_R_t), 6)
+        })
+        
+        return pd.DataFrame(rows)
+
 
     def simulate(self, parameters, times):
         if self.initial_conditions is None:
@@ -56,7 +107,7 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
             gamma_estimate = dR_dt / infected
             crude_R_t = beta_estimate * susceptible / (pop_size * gamma_estimate)
 
-        self.crude_R_t = np.mean(crude_R_t[np.isfinite(crude_R_t)])
+        self.R_t_estimate = np.mean(crude_R_t[np.isfinite(crude_R_t)])
 
     def plot_debug_history(self):
         """
@@ -142,6 +193,22 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         return {}
 
     def fit_with_pints(self, times, observed, x0, sigma=10.0):
+        """
+        Fit the model parameters to observed data using PINTS optimizer.
+        Stores fitted parameters as class attributes and returns key results.
+        
+        Args:
+            times: Time points for simulation
+            observed: Observed data to fit against
+            x0: Initial parameter guess
+            sigma: Standard deviation for likelihood function
+            
+        Returns:
+            dict: Dictionary containing:
+                - 'parameters': Fitted parameter values
+                - 'simulated': Simulated output using fitted parameters
+                - 'comparison': DataFrame comparing estimated vs. true parameters
+        """
         problem = pints.MultiOutputProblem(self, times, observed)
         log_likelihood = pints.GaussianKnownSigmaLogLikelihood(problem, sigma=np.ones(4) * sigma)
 
@@ -149,30 +216,43 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         prior = pints.UniformLogPrior(lower, upper)
         posterior = pints.LogPosterior(log_likelihood, prior)
 
-        optimiser = pints.OptimisationController(posterior, x0, method=pints.CMAES)
+        optimiser = pints.OptimisationController(posterior, x0, method=pints.XNES)
         optimiser.set_max_iterations(1000)
         optimiser.set_parallel(False)
 
-        # Clear previous debug history
         self.debug_history.clear()
-
-        found_params, found_value = optimiser.run()
+        found_params, _ = optimiser.run()
+        
+        # Store original parameters as class attribute
+        self.found_params = found_params
+        
+        # Get the simulation output with fitted parameters
         sim_output = self.simulate(found_params, times)
-
-        # Plot simulation vs observed
+        
+        # Call subclass implementation to update class attributes
+        self.postprocess_fit_parameters(found_params)
+        
+        # Display the results
         self.plot(times, sim_output, title=f"Fitted {self.name}", observed=observed)
-
-        # Optional: plot debug info evolution
         if self.debug_history:
             self.plot_debug_history()
 
-        return {
-            "optimized_parameters": found_params,
-            "log_posterior": found_value,
-            "R_estimate": self.crude_R_t,
-            **self.postprocess_fit_parameters(found_params),
-            "results": sim_output
+        # Get parameter comparison
+        comparison_df = self.compare_estimates_to_truth()
+        
+        # Create the results dictionary with just the requested elements
+        results = {
+            'parameters': found_params,
+            'simulated': sim_output,
+            'comparison': comparison_df
         }
+        
+        # Print parameter comparison
+        print("\nParameter Comparison:")
+        print(comparison_df)
+        
+        return results
+
     def ks_test_summary(self, observed, simulated, times=None, alpha=0.05):
         """
         Performs the Kolmogorov–Smirnov test comparing each compartment's simulated and observed data.
@@ -265,13 +345,17 @@ class SimpleSEIRModel(AbstractSEIRModel):
         return [0.1, 0.05, 0.05], [5.0, 1.0, 1.0]
 
     def postprocess_fit_parameters(self, params):
+        """
+        Store fitted parameters as class attributes.
+        
+        Args:
+            params: The fitted parameters [beta, kappa, gamma]
+        """
         beta, kappa, gamma = params
-        return {
-            "beta": beta,
-            "kappa": kappa,
-            "gamma": gamma
-        }
-  
+        self.beta_estimate = beta
+        self.kappa_estimate = kappa  
+        self.gamma_estimate = gamma
+    
 
 class RocheModel(AbstractSEIRModel):
     def __init__(self, initial_conditions):
@@ -381,21 +465,35 @@ class RocheModel(AbstractSEIRModel):
         return lower, upper
 
     def postprocess_fit_parameters(self, params):
+        """
+        Calculate and store derived parameters from the fitted Roche model parameters.
+        
+        Args:
+            params: The fitted parameters [C, beta_min, beta_max, stringency50, k, k_s, k_ri]
+        """
         C, beta_min, beta_max, stringency50, k, k_s, k_ri = params
-        stringency=self.stringency
-        pop_size = sum(self.initial_conditions)
+        stringency = self.stringency
+        N = sum(self.initial_conditions)
 
+        # Store original parameters
+        self.C_estimate = C
+        self.beta_min_estimate = beta_min
+        self.beta_max_estimate = beta_max
+        self.stringency50_estimate = stringency50
+        self.k_estimate = k
+        self.k_s_estimate = k_s
+        self.k_ri_estimate = k_ri
+        
+        # Calculate derived parameters
         kappa = 1 / k
         gamma = 1 / (k_s + k_ri)
 
         theta_gamma = stringency ** gamma
         theta50_gamma = stringency50 ** gamma
-
         beta_s = beta_max - (beta_max - beta_min) * (theta_gamma / (theta_gamma + theta50_gamma))
-        beta = C * (beta_s / (2 * pop_size))
-
-        return {
-            "beta": beta,
-            "kappa": kappa,
-            "gamma": gamma
-        }
+        beta = C * (beta_s / (2 * N))
+        
+        # Store derived parameters
+        self.beta_estimate = beta
+        self.kappa_estimate = kappa
+        self.gamma_estimate = gamma
