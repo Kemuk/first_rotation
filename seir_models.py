@@ -180,7 +180,7 @@ class SimpleSEIRModel(AbstractSEIRModel):
     def n_parameters(self):
         return 3
 
-    def _full_simulate(self, initial_conditions, parameters, times):
+    def _full_simulate(self, initial_conditions, parameters, times,  return_debug=False):
         beta, kappa, gamma = parameters
         dt = times[1] - times[0]
         num_steps = len(times)
@@ -198,6 +198,16 @@ class SimpleSEIRModel(AbstractSEIRModel):
             dR = gamma * I
             states[i] = [S + dt * dS, E + dt * dE, I + dt * dI, R + dt * dR]
 
+                
+        debug_info = {
+            "beta": beta,
+            "gamma": gamma,
+            "kappa": kappa
+        }
+
+        if return_debug:
+            return states, debug_info
+        
         return states
 
     def default_bounds(self):
@@ -249,6 +259,10 @@ class RocheModel(AbstractSEIRModel):
 
         # Step 4: Final beta
         beta = C * (beta_s/(2*N))
+
+        ds_over_time = []
+        de_over_time = []
+
         
         debug_info = {
             "C": C,
@@ -273,9 +287,17 @@ class RocheModel(AbstractSEIRModel):
             dI = kappa * E - gamma * I
             dR = gamma * I
 
+            ds_over_time.append(dS)
+            de_over_time.append(dE)
+
+
             states[i] = [S + dt * dS, E + dt * dE, I + dt * dI, R + dt * dR]
         
         if return_debug:
+            debug_info.update({
+            "ds_over_time": np.array(ds_over_time),
+            "de_over_time": np.array(de_over_time)
+            })
             return states, debug_info
 
         return states
@@ -301,7 +323,7 @@ class RocheModel(AbstractSEIRModel):
             tuple: A pair of lists (lower_bounds, upper_bounds) containing the 
                 minimum and maximum allowable values for each parameter.
         """
-        lower = [1, 0.01, 0.5, 0, 10, 1, 1, 1]
+        lower = [1, 0.01, 0.5, 1, 10, 1, 1, 1]
         upper = [100, 0.5, 2.0, 100, 100, 10, 14, 21]
         return lower, upper
 
