@@ -257,10 +257,10 @@ class RocheModel(AbstractSEIRModel):
         fraction = theta_gamma / (theta_gamma + theta50_gamma)
 
         # Step 3: Compute beta_s
-        beta_s = beta_max - (beta_max - beta_min) * fraction
+        beta_s = (beta_max - (beta_max - beta_min) * fraction)
 
         # Step 4: Final beta
-        beta = C * (beta_s/(2*N))
+        beta = C * (beta_s /(2*N))
 
         ds_over_time = []
         de_over_time = []
@@ -284,8 +284,8 @@ class RocheModel(AbstractSEIRModel):
         for i in range(1, num_steps):
             S, E, I, R = states[i - 1]
 
-            dS = (-beta * S * I) /N
-            dE = (beta * S * I)/N- kappa * E
+            dS = -beta * S * I
+            dE = beta * S * I- kappa * E
             dI = kappa * E - gamma * I
             dR = gamma * I
 
@@ -303,6 +303,7 @@ class RocheModel(AbstractSEIRModel):
             return states, debug_info
 
         return states
+
 
 
     def default_bounds(self):
@@ -324,8 +325,8 @@ class RocheModel(AbstractSEIRModel):
             tuple: A pair of lists (lower_bounds, upper_bounds) containing the 
                 minimum and maximum allowable values for each parameter.
         """
-        lower = [1, 0.01, 0.5, 1, 1, 1, 1]
-        upper = [100, 0.5, 2.0, 100, 10, 14, 21]
+        lower = [0.01, 0.01, 0.5, 1, 1, 1, 1]
+        upper = [1, 0.5, 2.0, 100, 10, 14, 21]
         return lower, upper
 
     def postprocess_fit_parameters(self, params):
