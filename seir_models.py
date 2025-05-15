@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from scipy.interpolate import interp1d
 import math
+from scipy.stats import ks_2samp
+import pandas as pd
 np.random.seed(42)
 
 class AbstractSEIRModel(pints.ForwardModel, ABC):
@@ -147,7 +149,7 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         prior = pints.UniformLogPrior(lower, upper)
         posterior = pints.LogPosterior(log_likelihood, prior)
 
-        optimiser = pints.OptimisationController(posterior, x0, method=pints.XNES)
+        optimiser = pints.OptimisationController(posterior, x0, method=pints.CMAES)
         optimiser.set_max_iterations(1000)
         optimiser.set_parallel(False)
 
@@ -169,7 +171,56 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
             "log_posterior": found_value,
             "R_estimate": self.crude_R_t,
             **self.postprocess_fit_parameters(found_params),
+            "results": sim_output
         }
+    def ks_test_summary(self, observed, simulated, times=None, alpha=0.05):
+        """
+        Performs the Kolmogorov–Smirnov test comparing each compartment's simulated and observed data.
+
+        H0: The simulated and observed data come from the same distribution.
+        H1: The simulated and observed data come from different distributions.
+
+        Args:
+            observed (np.ndarray): Observed data of shape (n_timepoints, 4)
+            simulated (np.ndarray): Simulated model output of shape (n_timepoints, 4)
+            times (np.ndarray, optional): Time points (not used in test)
+            alpha (float): Significance level for hypothesis testing (default 0.05)
+        """
+        labels = ['Susceptible', 'Exposed', 'Infectious', 'Recovered']
+        ks_results = []
+
+        for i, label in enumerate(labels):
+            ks_stat, p_value = ks_2samp(observed[:, i], simulated[:, i])
+            reject_null = p_value < alpha
+            ks_results.append((label, ks_stat, p_value, reject_null))
+
+        # Display results in a table
+        ks_df = pd.DataFrame(
+            ks_results,
+            columns=['Compartment', 'KS Statistic', 'p-value', f'Reject H₀ (α={alpha})']
+        )
+
+        print("\n=== Kolmogorov–Smirnov Test Summary ===")
+        print("H₀: Simulated and observed data come from the SAME distribution.")
+        print("H₁: Simulated and observed data come from DIFFERENT distributions.")
+        print(ks_df.to_string(index=False))
+
+        # Plot empirical CDFs
+        fig, axs = plt.subplots(4, 1, figsize=(8, 12), sharex=True)
+        for i, ax in enumerate(axs):
+            sorted_obs = np.sort(observed[:, i])
+            sorted_sim = np.sort(simulated[:, i])
+            ecdf_obs = np.arange(1, len(sorted_obs) + 1) / len(sorted_obs)
+            ecdf_sim = np.arange(1, len(sorted_sim) + 1) / len(sorted_sim)
+
+            ax.plot(sorted_obs, ecdf_obs, label='Observed', linestyle='--')
+            ax.plot(sorted_sim, ecdf_sim, label='Simulated', linestyle='-')
+            ax.set_title(f'Empirical CDF - {labels[i]}')
+            ax.legend()
+            ax.grid(True)
+
+        plt.tight_layout()
+        plt.show()
 
     
 class SimpleSEIRModel(AbstractSEIRModel):
