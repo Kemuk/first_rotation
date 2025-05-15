@@ -226,13 +226,15 @@ class RocheModel(AbstractSEIRModel):
     def __init__(self, initial_conditions):
         super().__init__(initial_conditions)
         self.name="Roche Model"
+        self.stringency=1
 
     def n_parameters(self):
-        return 8
+        return 7
 
 
     def _full_simulate(self, initial_conditions, parameters, times, return_debug=False):
-        C, beta_min, beta_max, stringency, stringency50, k, k_s, k_ri = parameters
+        C, beta_min, beta_max, stringency50, k, k_s, k_ri = parameters
+        stringency = self.stringency
 
         dt = times[1] - times[0]
         num_steps = len(times)
@@ -282,8 +284,8 @@ class RocheModel(AbstractSEIRModel):
         for i in range(1, num_steps):
             S, E, I, R = states[i - 1]
 
-            dS = (-beta * S * I) 
-            dE = (beta * S * I)- kappa * E
+            dS = (-beta * S * I) /N
+            dE = (beta * S * I)/N- kappa * E
             dI = kappa * E - gamma * I
             dR = gamma * I
 
@@ -313,7 +315,6 @@ class RocheModel(AbstractSEIRModel):
             1. C            - Scaling constant for transmission
             2. beta_min     - Minimum transmission rate
             3. beta_max     - Maximum transmission rate
-            4. stringency   - Current stringency index value
             5. stringency50 - Stringency at which transmission is halved
             6. k            - Average latent period (days)
             7. k_s          - Average symptomatic infectious period (days)
@@ -323,12 +324,13 @@ class RocheModel(AbstractSEIRModel):
             tuple: A pair of lists (lower_bounds, upper_bounds) containing the 
                 minimum and maximum allowable values for each parameter.
         """
-        lower = [1, 0.01, 0.5, 1, 10, 1, 1, 1]
-        upper = [100, 0.5, 2.0, 100, 100, 10, 14, 21]
+        lower = [1, 0.01, 0.5, 1, 1, 1, 1]
+        upper = [100, 0.5, 2.0, 100, 10, 14, 21]
         return lower, upper
 
     def postprocess_fit_parameters(self, params):
-        C, beta_min, beta_max, stringency, stringency50, k, k_s, k_ri = params
+        C, beta_min, beta_max, stringency50, k, k_s, k_ri = params
+        stringency=self.stringency
         pop_size = sum(self.initial_conditions)
 
         kappa = 1 / k
