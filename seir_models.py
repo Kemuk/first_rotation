@@ -10,11 +10,11 @@ import pandas as pd
 np.random.seed(42)
 
 class AbstractSEIRModel(pints.ForwardModel, ABC):
-    def __init__(self, initial_conditions=None):
+    def __init__(self, initial_conditions=None, real_Rt=0):
         super().__init__()
         self.initial_conditions = initial_conditions
 
-        self.real_R_t=3
+        self.real_Rt=real_Rt
         self.R_t_estimate = 0
         self.name = None
         self.debug_history = []
@@ -23,9 +23,9 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         self.kappa_estimate=None
         self.gamma_estimate=None
 
-        self.real_beta=0.214
-        self.real_kappa=0.218
-        self.real_gamma=0.071
+        self.real_beta=None
+        self.real_kappa=None
+        self.real_gamma=None
 
     @abstractmethod
     def n_parameters(self):
@@ -40,43 +40,28 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
 
     def compare_estimates_to_truth(self):
         """
-        Compare estimated parameters with their true values.
+        Compare estimated parameters with their true values, including percentage error.
         """
         rows = []
-        
-        # Add comparison for beta
-        rows.append({
-            "Parameter": "beta",
-            "Estimated": round(self.beta_estimate, 6),
-            "True": round(self.real_beta, 6),
-            "Error": round(abs(self.beta_estimate - self.real_beta), 6)
-        })
-        
-        # Add comparison for kappa
-        rows.append({
-            "Parameter": "kappa",
-            "Estimated": round(self.kappa_estimate, 6),
-            "True": round(self.real_kappa, 6),
-            "Error": round(abs(self.kappa_estimate - self.real_kappa), 6)
-        })
-        
-        # Add comparison for gamma
-        rows.append({
-            "Parameter": "gamma",
-            "Estimated": round(self.gamma_estimate, 6),
-            "True": round(self.real_gamma, 6),
-            "Error": round(abs(self.gamma_estimate - self.real_gamma), 6)
-        })
-        
-        # Add comparison for R_t
-        rows.append({
-            "Parameter": "R_t",
-            "Estimated": round(self.R_t_estimate, 6),
-            "True": round(self.real_R_t, 6),
-            "Error": round(abs(self.R_t_estimate - self.real_R_t), 6)
-        })
-        
+
+        def add_row(param_name, est, true):
+            error = abs(est - true)
+            perc_error = (error / true * 100) if true != 0 else float('inf')
+            rows.append({
+                "Parameter": param_name,
+                "Estimated": round(est, 6),
+                "True": round(true, 6),
+                "Error": round(error, 6),
+                "Percentage Error": round(perc_error, 2)
+            })
+
+        add_row("beta", self.beta_estimate, self.real_beta)
+        add_row("kappa", self.kappa_estimate, self.real_kappa)
+        add_row("gamma", self.gamma_estimate, self.real_gamma)
+        add_row("R_t", self.R_t_estimate, self.real_Rt)
+
         return pd.DataFrame(rows)
+
 
 
     def simulate(self, parameters, times):
@@ -106,6 +91,8 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
             beta_estimate = -dS_dt * pop_size / (susceptible * infected)
             gamma_estimate = dR_dt / infected
             crude_R_t = beta_estimate * susceptible / (pop_size * gamma_estimate)
+        
+        self.beta_estimate=np.mean(beta_estimate)
 
         self.R_t_estimate = np.mean(crude_R_t[np.isfinite(crude_R_t)])
 
@@ -154,8 +141,10 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         formatter = FuncFormatter(thousands_formatter)
 
         if observed is not None:
-            # Plot with 4 subplots for Simulated vs Observed
-            fig, axs = plt.subplots(4, 1, figsize=(10, 12), sharex=True)
+            # 2x2 grid for Simulated vs Observed
+            fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
+            axs = axs.flatten()
+
             for i, ax in enumerate(axs):
                 ax.plot(times, states[:, i], label="Simulated", linewidth=2)
                 ax.plot(times, observed[:, i], label="Observed", linestyle='--')
@@ -163,7 +152,9 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
                 ax.legend()
                 ax.grid(True)
                 ax.yaxis.set_major_formatter(formatter)
-            axs[-1].set_xlabel("Time")
+
+            for ax in axs[2:]:
+                ax.set_xlabel("Time")
         else:
             # Single combined plot
             fig, ax = plt.subplots(figsize=(10, 6))
@@ -178,6 +169,7 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         fig.suptitle(title, fontsize=16)
         plt.tight_layout()
         plt.show()
+
 
     @abstractmethod
     def default_bounds(self):
@@ -209,6 +201,8 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
                 - 'simulated': Simulated output using fitted parameters
                 - 'comparison': DataFrame comparing estimated vs. true parameters
         """
+        self.set_true_rates_from_observed(observed, times)
+
         problem = pints.MultiOutputProblem(self, times, observed)
         log_likelihood = pints.GaussianKnownSigmaLogLikelihood(problem, sigma=np.ones(4) * sigma)
 
@@ -252,60 +246,119 @@ class AbstractSEIRModel(pints.ForwardModel, ABC):
         print(comparison_df)
         
         return results
-
-    def ks_test_summary(self, observed, simulated, times=None, alpha=0.05):
+    def set_true_rates_from_observed(self, observed, times):
         """
-        Performs the Kolmogorov–Smirnov test comparing each compartment's simulated and observed data.
-
-        H0: The simulated and observed data come from the same distribution.
-        H1: The simulated and observed data come from different distributions.
+        Estimate and set average true beta, gamma, and kappa from observed data.
 
         Args:
             observed (np.ndarray): Observed data of shape (n_timepoints, 4)
-            simulated (np.ndarray): Simulated model output of shape (n_timepoints, 4)
-            times (np.ndarray, optional): Time points (not used in test)
-            alpha (float): Significance level for hypothesis testing (default 0.05)
+            times (np.ndarray): Time points associated with the observed data
+        """
+        dt = times[1] - times[0]
+        S = observed[:, 0]
+        E = observed[:, 1]
+        I = observed[:, 2]
+        R = observed[:, 3]
+        N = S[0] + E[0] + I[0] + R[0]
+
+        dS_dt = np.gradient(S, dt)
+        dE_dt=np.gradient(E,dt)
+        dI_dt = np.gradient(I, dt)
+        dR_dt = np.gradient(R, dt)
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            # Avoid division by zero or negative inputs
+            safe_SI = np.where((S * I) == 0, np.nan, S * I)
+            beta = -dS_dt * N / safe_SI
+
+            safe_I = np.where(I == 0, np.nan, I)
+            gamma = dR_dt / safe_I
+
+            # recompute with stable gamma (already has nans in unsafe places)
+            safe_E = np.where(E == 0, np.nan, E)
+            #kappa = (dI_dt + gamma * I) / safe_E
+            kappa =  (beta/N * S * I -dE_dt )/ safe_E
+
+        # Final assignment using nanmean
+        self.real_beta = np.nanmean(beta)
+        self.real_gamma = np.nanmean(gamma)
+        self.real_kappa = np.nanmean(kappa)
+
+
+
+    def ks_test_summary(self, observed, simulated, times=None, alpha=0.05):
+        """
+        Plot ECDFs with arrows showing KS statistics, and return KS stats in a DataFrame.
+
+        Args:
+            observed (np.ndarray): Observed data (T, 4).
+            simulated (np.ndarray): Simulated model output (T, 4).
+            times: Optional; not used.
+
+        Returns:
+            pd.DataFrame: KS statistics per compartment.
         """
         labels = ['Susceptible', 'Exposed', 'Infectious', 'Recovered']
-        ks_results = []
+        stats_data = []
 
-        for i, label in enumerate(labels):
-            ks_stat, p_value = ks_2samp(observed[:, i], simulated[:, i])
-            reject_null = p_value < alpha
-            ks_results.append((label, ks_stat, p_value, reject_null))
+        fig, axs = plt.subplots(2, 2, figsize=(10, 8))
+        axs = axs.flatten()
 
-        # Display results in a table
-        ks_df = pd.DataFrame(
-            ks_results,
-            columns=['Compartment', 'KS Statistic', 'p-value', f'Reject H₀ (α={alpha})']
-        )
-
-        print("\n=== Kolmogorov–Smirnov Test Summary ===")
-        print("H₀: Simulated and observed data come from the SAME distribution.")
-        print("H₁: Simulated and observed data come from DIFFERENT distributions.")
-        print(ks_df.to_string(index=False))
-
-        # Plot empirical CDFs
-        fig, axs = plt.subplots(4, 1, figsize=(8, 12), sharex=True)
         for i, ax in enumerate(axs):
-            sorted_obs = np.sort(observed[:, i])
-            sorted_sim = np.sort(simulated[:, i])
-            ecdf_obs = np.arange(1, len(sorted_obs) + 1) / len(sorted_obs)
-            ecdf_sim = np.arange(1, len(sorted_sim) + 1) / len(sorted_sim)
+            obs_sorted = np.sort(observed[:, i])
+            sim_sorted = np.sort(simulated[:, i])
 
-            ax.plot(sorted_obs, ecdf_obs, label='Observed', linestyle='--')
-            ax.plot(sorted_sim, ecdf_sim, label='Simulated', linestyle='-')
-            ax.set_title(f'Empirical CDF - {labels[i]}')
-            ax.legend()
+            ecdf_obs = np.arange(1, len(obs_sorted) + 1) / len(obs_sorted)
+            ecdf_sim = np.arange(1, len(sim_sorted) + 1) / len(sim_sorted)
+
+            all_vals = np.union1d(obs_sorted, sim_sorted)
+            ecdf_obs_interp = np.searchsorted(obs_sorted, all_vals, side='right') / len(obs_sorted)
+            ecdf_sim_interp = np.searchsorted(sim_sorted, all_vals, side='right') / len(sim_sorted)
+
+            diffs = np.abs(ecdf_obs_interp - ecdf_sim_interp)
+            ks_stat = np.max(diffs)
+            ks_index = np.argmax(diffs)
+            x_ks = all_vals[ks_index]
+            y1 = ecdf_obs_interp[ks_index]
+            y2 = ecdf_sim_interp[ks_index]
+
+            stats_data.append({
+                "Compartment": labels[i],
+                "KS Statistic": ks_stat
+            })
+
+            # Plot ECDFs
+            ax.plot(obs_sorted, ecdf_obs, label='Observed', linestyle='--')
+            ax.plot(sim_sorted, ecdf_sim, label='Simulated', linestyle='-')
+            ax.set_title(f'ECDF – {labels[i]}')
             ax.grid(True)
+            ax.legend()
+
+            # Annotate KS arrow
+            y_min, y_max = sorted([y1, y2])
+            ax.annotate(
+                "", xy=(x_ks, y_max), xytext=(x_ks, y_min),
+                arrowprops=dict(arrowstyle='<->', color='red', lw=1.5)
+            )
+            ax.text(
+                x_ks, (y_min + y_max) / 2,
+                f"KS={ks_stat:.3f}", color='red', fontsize=9,
+                ha='left', va='center', rotation=90,
+                bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2')
+            )
 
         plt.tight_layout()
         plt.show()
 
+        ks_df = pd.DataFrame(stats_data)
+        print("\n=== KS Statistics ===")
+        print(ks_df.to_string(index=False))
+
+        return ks_df
     
 class SimpleSEIRModel(AbstractSEIRModel):
-    def __init__(self, initial_conditions):
-        super().__init__(initial_conditions)
+    def __init__(self, initial_conditions, real_Rt):
+        super().__init__(initial_conditions, real_Rt)
         self.name="SimpleSEIRModel"
 
     def n_parameters(self):
@@ -342,7 +395,7 @@ class SimpleSEIRModel(AbstractSEIRModel):
         return states
 
     def default_bounds(self):
-        return [0.1, 0.05, 0.05], [5.0, 1.0, 1.0]
+        return [0.05, 0.05, 0.05], [5.0, 1.0, 1.0]
 
     def postprocess_fit_parameters(self, params):
         """
@@ -358,8 +411,8 @@ class SimpleSEIRModel(AbstractSEIRModel):
     
 
 class RocheModel(AbstractSEIRModel):
-    def __init__(self, initial_conditions):
-        super().__init__(initial_conditions)
+    def __init__(self, initial_conditions, real_Rt):
+        super().__init__(initial_conditions, real_Rt)
         self.name="Roche Model"
         self.stringency=1
 
@@ -472,8 +525,6 @@ class RocheModel(AbstractSEIRModel):
             params: The fitted parameters [C, beta_min, beta_max, stringency50, k, k_s, k_ri]
         """
         C, beta_min, beta_max, stringency50, k, k_s, k_ri = params
-        stringency = self.stringency
-        N = sum(self.initial_conditions)
 
         # Store original parameters
         self.C_estimate = C
@@ -483,17 +534,23 @@ class RocheModel(AbstractSEIRModel):
         self.k_estimate = k
         self.k_s_estimate = k_s
         self.k_ri_estimate = k_ri
-        
+
         # Calculate derived parameters
         kappa = 1 / k
         gamma = 1 / (k_s + k_ri)
 
-        theta_gamma = stringency ** gamma
-        theta50_gamma = stringency50 ** gamma
-        beta_s = beta_max - (beta_max - beta_min) * (theta_gamma / (theta_gamma + theta50_gamma))
-        beta = C * (beta_s / (2 * N))
-        
-        # Store derived parameters
-        self.beta_estimate = beta
         self.kappa_estimate = kappa
         self.gamma_estimate = gamma
+
+        # Print optimised parameters as a DataFrame
+        param_df = pd.DataFrame([{
+            "C": C,
+            "beta_min": beta_min,
+            "beta_max": beta_max,
+            "stringency50": stringency50,
+            "k": k,
+            "k_s": k_s,
+            "k_ri": k_ri
+        }])
+        print("\n=== Optimised Parameters ===")
+        print(param_df.to_string(index=False))
